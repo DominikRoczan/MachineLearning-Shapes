@@ -1,0 +1,1 @@
+image_path = ('21.jpg')

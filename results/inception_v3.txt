@@ -1,0 +1,28 @@
+Model Name: inception_v3
+
+Data: 2024-01-24 23:34:55.528102
+Training Duration: 0:08:43.071214
+
+Train Accuracy: 0.5232
+Validation Accuracy: 0.575
+Test Accuracy: 0.6667
+
+Train loss: 0.5891
+Validation loss: 0.4854
+Test loss: 0.3939
+
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.31      0.72      0.43       148
+           1       0.61      0.21      0.32       305
+
+    accuracy                           0.38       453
+   macro avg       0.46      0.46      0.37       453
+weighted avg       0.51      0.38      0.35       453
+
+
+Confusion Matrix:
+[[106,  42],
+ [240,  65]]
