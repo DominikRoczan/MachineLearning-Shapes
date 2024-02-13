@@ -1,13 +1,6 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications import (
-    VGG19, VGG16, MobileNetV2, MobileNetV3Small, InceptionV3, InceptionResNetV2, ResNet152,
-    DenseNet121, NASNetMobile, EfficientNetV2M)
-
-
+from tensorflow.keras.applications import (MobileNetV2, MobileNetV3Small, InceptionV3, InceptionResNetV2, )
 from keras.utils import to_categorical
-
-
-
 from tensorflow.keras.models import Sequential
 from tensorflow.keras import layers
 from tensorflow.keras.layers import BatchNormalization, Dropout
@@ -31,8 +24,8 @@ test_dir = os.path.join(base_dir, 'test')
 # Konfiguracja generatorów danych
 train_datagen = (ImageDataGenerator
                  (rescale=1. / 255, rotation_range=40, width_shift_range=0.2, height_shift_range=0.2,
-                  shear_range=0.2, zoom_range=0.2, horizontal_flip=True, fill_mode='nearest'))
-
+                  shear_range=0.2, zoom_range=0.2, horizontal_flip=True, fill_mode='nearest'
+                  ))
 val_datagen = (ImageDataGenerator(rescale=1. / 255))
 test_datagen = (ImageDataGenerator(rescale=1. / 255))
 
@@ -43,18 +36,11 @@ test_generator = test_datagen.flow_from_directory(test_dir, target_size=(224, 22
                                                   color_mode='rgb')
 # Przekształć etykiety klas na wektory one-hot encoding
 train_labels_one_hot = to_categorical(train_generator.labels, num_classes=2)
+
 # Ładowanie modelu:
 # base_model = InceptionV3(input_shape=(224,224, 3), include_top=False,weights='imagenet')
 base_model = MobileNetV2(input_shape=(224, 224, 3), include_top=False, weights='imagenet')
 # base_model = InceptionResNetV2(input_shape=(224, 224, 3), include_top=False,weights='imagenet')
-
-# base_model = NASNetMobile(input_shape=(224, 224, 3), include_top=False,weights='imagenet')
-# base_model = DenseNet121(input_shape=(224, 224, 3), include_top=False,weights='imagenet')
-
-# base_model = VGG19(input_shape=(224, 224, 3), include_top=False,weights='imagenet')
-# base_model = VGG16(input_shape=(224, 224, 3), include_top=False,weights='imagenet')
-# base_model = ResNet152(input_shape=(224, 224, 3), include_top=False,weights='imagenet')
-# base_model = EfficientNetV2M(input_shape=(224, 224, 3), include_top=False,weights='imagenet')
 
 # Nazwa modelu
 model_name = base_model.name
@@ -63,12 +49,6 @@ model_name = base_model.name
 base_model.trainable = False
 
 # Budowa model
-'''model = Sequential([
-    base_model,
-    layers.GlobalAveragePooling2D(),
-    layers.Dense(2, activation='softmax')
-])'''
-
 model = Sequential([
     base_model,
     layers.Conv2D(16, (2, 2), activation='sigmoid', padding='same'),
@@ -83,7 +63,7 @@ model = Sequential([
     layers.Dense(128, activation='relu'),
     # layers.Dropout(0.5),
     layers.Dense(2, activation='sigmoid')
-])
+    ])
 
 # Kompilacja modelu
 model.compile(optimizer='adam',
@@ -128,7 +108,7 @@ tensorboard_test = TensorBoard(log_dir=log_dir_test, histogram_freq=0, write_gra
 start_time = datetime.now()
 
 # Trening modelu
-model.fit(train_generator, epochs=32, callbacks=[tensorboard_train, tensorboard_val, tensorboard_test])
+model.fit(train_generator, epochs=30, callbacks=[tensorboard_train, tensorboard_val, tensorboard_test])
 
 # Zapis modelu do pliku .h5
 model.save(f'{model_name}.h5')
