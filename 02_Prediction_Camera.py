@@ -19,7 +19,7 @@ def predict_shape(image):
     return class_idx
 
 # Wczytaj obraz
-image_path = '3.jpg'
+image_path = 'new_Image/3.jpg'
 image = cv2.imread(image_path)
 
 # Konwertuj obraz na odcienie szarości

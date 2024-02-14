@@ -1,41 +1,38 @@
+# skrypt do labelowania
+
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import (MobileNetV2, MobileNetV3Small, InceptionV3, InceptionResNetV2, )
-from keras.utils import to_categorical
 from tensorflow.keras.models import Sequential
 from tensorflow.keras import layers
-from tensorflow.keras.layers import BatchNormalization, Dropout
-from tensorflow.keras.optimizers import Adam, SGD, RMSprop
 from keras.callbacks import TensorBoard
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
-# from sklearn.model_selection import train_test_split
 import numpy as np
 import os
 from datetime import datetime
 
-
-# Ścieżka do katalogu głównego z obrazami
+# Ścieżka do datasets
 base_dir = f'G:/Mój dysk/10_Machine Learning/00_Projekty/Data_Sets/images'
 
-# Ścieżki do zbiorów
+# Tworzenie ścieżek do zbiorów
 train_dir = os.path.join(base_dir, 'train')
 val_dir = os.path.join(base_dir, 'val')
 test_dir = os.path.join(base_dir, 'test')
 
 # Konfiguracja generatorów danych
 train_datagen = (ImageDataGenerator
-                 (rescale=1. / 255, rotation_range=40, width_shift_range=0.2, height_shift_range=0.2,
+                 (rescale=1 / 255, rotation_range=40, width_shift_range=0.2, height_shift_range=0.2,
                   shear_range=0.2, zoom_range=0.2, horizontal_flip=True, fill_mode='nearest'
                   ))
-val_datagen = (ImageDataGenerator(rescale=1. / 255))
-test_datagen = (ImageDataGenerator(rescale=1. / 255))
+val_datagen = (ImageDataGenerator(rescale=1 / 255))
+test_datagen = (ImageDataGenerator(rescale=1 / 255))
 
+# Pobieranie i przetwarzanie danych
 train_generator = train_datagen.flow_from_directory(train_dir, target_size=(224, 224), class_mode='categorical',
                                                     color_mode='rgb')
-val_generator = val_datagen.flow_from_directory(val_dir, target_size=(224, 224), class_mode='categorical', color_mode='rgb')
+val_generator = val_datagen.flow_from_directory(val_dir, target_size=(224, 224), class_mode='categorical',
+                                                color_mode='rgb')
 test_generator = test_datagen.flow_from_directory(test_dir, target_size=(224, 224), class_mode='categorical',
                                                   color_mode='rgb')
-# Przekształć etykiety klas na wektory one-hot encoding
-train_labels_one_hot = to_categorical(train_generator.labels, num_classes=2)
 
 # Ładowanie modelu:
 # base_model = InceptionV3(input_shape=(224,224, 3), include_top=False,weights='imagenet')
@@ -44,6 +41,7 @@ base_model = MobileNetV2(input_shape=(224, 224, 3), include_top=False, weights='
 
 # Nazwa modelu
 model_name = base_model.name
+model_name = model_name[:-9]
 
 # Zamrożenie wag modelu bazowego
 base_model.trainable = False
@@ -53,17 +51,17 @@ model = Sequential([
     base_model,
     layers.Conv2D(16, (2, 2), activation='sigmoid', padding='same'),
     layers.MaxPooling2D((2, 2)),
-    # layers.BatchNormalization(),
+    layers.BatchNormalization(),
     layers.Conv2D(32, (2, 2), activation='sigmoid', padding='same'),
     layers.MaxPooling2D((2, 2)),
-    # layers.BatchNormalization(),
+    layers.BatchNormalization(),
     layers.Conv2D(64, (2, 2), activation='relu', padding='same'),
     layers.MaxPooling2D((1, 1)),
     layers.Flatten(),
     layers.Dense(128, activation='relu'),
-    # layers.Dropout(0.5),
+    layers.Dropout(0.2),
     layers.Dense(2, activation='sigmoid')
-    ])
+])
 
 # Kompilacja modelu
 model.compile(optimizer='adam',
@@ -71,7 +69,7 @@ model.compile(optimizer='adam',
               # loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-# Utwórz podfolder w głównym katalogu "images" na wyniki
+# Folder na wyniki
 result_folder = 'results'
 os.makedirs(result_folder, exist_ok=True)
 
@@ -79,27 +77,15 @@ os.makedirs(result_folder, exist_ok=True)
 result_file_name = f"{model_name}.txt"
 result_file_path = os.path.join(result_folder, result_file_name)
 
-# Nazwa katalogu TensorBoard
-# log_dir = f'E:/USERS/dominik.roczan/PycharmProjects/logs{model_name}'
-# log_dir = f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/{model_name}_{datetime.now().strftime("%Y%m%d-%H%M")}'
-
-# Katalogi TensorBoard
-log_dir_train = f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/{model_name}_{datetime.now().strftime("%Y%m%d-%H%M")}/train'
-log_dir_val = f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/{model_name}_{datetime.now().strftime("%Y%m%d-%H%M")}/val'
-log_dir_test = f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/{model_name}_{datetime.now().strftime("%Y%m%d-%H%M")}/test'
-
+# Katalog TensorBoard
+log_dir = (f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/'
+           f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}..Dropout_0.5+CalySet')
 # log_dir_train = f'E:/USERS/dominik.roczan/PycharmProjects/logs{model_name}_{datetime.now().strftime("%Y%m%d-%H%M")}/train'
-# log_dir_test = f'E:/USERS/dominik.roczan/PycharmProjects/logs{model_name}_{datetime.now().strftime("%Y%m%d-%H%M")}/test'
-# log_dir_val = f'E:/USERS/dominik.roczan/PycharmProjects/logs{model_name}_{datetime.now().strftime("%Y%m%d-%H%M")}/val'
 
-os.makedirs(log_dir_train, exist_ok=True)
-os.makedirs(log_dir_val, exist_ok=True)
-os.makedirs(log_dir_test, exist_ok=True)
+os.makedirs(log_dir, exist_ok=True)
 
 # TensorBoard Callback
-tensorboard_train = TensorBoard(log_dir=log_dir_train, histogram_freq=0, write_graph=True, write_images=False)
-tensorboard_val = TensorBoard(log_dir=log_dir_val, histogram_freq=0, write_graph=True, write_images=False)
-tensorboard_test = TensorBoard(log_dir=log_dir_test, histogram_freq=0, write_graph=True, write_images=False)
+tensorboard_train = TensorBoard(log_dir=log_dir, histogram_freq=0, write_graph=False, write_images=False)
 
 # Wywołanie tensorboard w konsoli: tensorboard --logdir=C:/USERS/domin/OneDrive/Pulpit/Python/logs
 # Wywołanie tensorboard w konsoli: tensorboard --logdir=E:/USERS/dominik.roczan/PycharmProjects/logs
@@ -108,7 +94,13 @@ tensorboard_test = TensorBoard(log_dir=log_dir_test, histogram_freq=0, write_gra
 start_time = datetime.now()
 
 # Trening modelu
-model.fit(train_generator, epochs=30, callbacks=[tensorboard_train, tensorboard_val, tensorboard_test])
+model.fit_generator(generator=train_generator,
+                    steps_per_epoch=len(train_generator),
+                    validation_data=val_generator,
+                    validation_steps=len(val_generator),
+                    epochs=22,
+                    callbacks=[tensorboard_train]
+                    )
 
 # Zapis modelu do pliku .h5
 model.save(f'{model_name}.h5')

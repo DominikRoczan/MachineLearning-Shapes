@@ -1,1 +1,1 @@
-image_path = ('21.jpg')
+image_path = 'new_Image/4.jpg'
