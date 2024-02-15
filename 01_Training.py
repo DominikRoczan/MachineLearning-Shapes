@@ -1,4 +1,5 @@
 # skrypt do labelowania
+# rescalowanie
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import (MobileNetV2, MobileNetV3Small, InceptionV3, InceptionResNetV2, )
@@ -20,11 +21,11 @@ test_dir = os.path.join(base_dir, 'test')
 
 # Konfiguracja generatorów danych
 train_datagen = (ImageDataGenerator
-                 (rescale=1 / 255, rotation_range=40, width_shift_range=0.2, height_shift_range=0.2,
+                 (rescale=1.0 / 255, rotation_range=40, width_shift_range=0.2, height_shift_range=0.2,
                   shear_range=0.2, zoom_range=0.2, horizontal_flip=True, fill_mode='nearest'
                   ))
-val_datagen = (ImageDataGenerator(rescale=1 / 255))
-test_datagen = (ImageDataGenerator(rescale=1 / 255))
+val_datagen = (ImageDataGenerator(rescale=1.0 / 255))
+test_datagen = (ImageDataGenerator(rescale=1.0 / 255))
 
 # Pobieranie i przetwarzanie danych
 train_generator = train_datagen.flow_from_directory(train_dir, target_size=(224, 224), class_mode='categorical',
