@@ -122,7 +122,7 @@ model.fit_generator(generator=train_generator,
                     steps_per_epoch=len(train_generator),
                     validation_data=val_generator,
                     validation_steps=len(val_generator),
-                    epochs=22,
+                    epochs=2,
                     callbacks=[tensorboard_train]
                     )
 
@@ -145,7 +145,7 @@ y_pred = np.argmax(model.predict(train_generator), axis=1)  # przewidziane etyki
 classification_rep = classification_report(y_true, y_pred, zero_division=0)
 conf_matrix = confusion_matrix(y_true, y_pred)
 accuracy = accuracy_score(y_true, y_pred)
-F1 = f1_score(y_true, y_pred)
+
 
 # Wyniki na zbiorze treningowym
 train_results = model.evaluate(train_generator)
@@ -188,8 +188,6 @@ with open(result_file_path, 'w') as result_file:
     result_file.write("\n\n")
     result_file.write("Confusion Matrix:\n")
     result_file.write(np.array2string(conf_matrix, separator=', '))
-    result_file.write("F1:\n")
-    result_file.write(F1)
 
 # Otrzymaj słownik przypisujący etykiety klas do indeksów
 class_indices = train_generator.class_indices
