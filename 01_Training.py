@@ -1,5 +1,7 @@
 # skrypt do labelowania
 # rescalowanie
+# class mode = binary
+# co on drukuje print(image)
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import (MobileNetV2, MobileNetV3Small, InceptionV3, InceptionResNetV2, )
@@ -21,19 +23,19 @@ test_dir = os.path.join(base_dir, 'test')
 
 # Konfiguracja generatorów danych
 train_datagen = (ImageDataGenerator
-                 (rescale=1.0 / 255, rotation_range=40, width_shift_range=0.2, height_shift_range=0.2,
+                 (rescale=1. / 255, rotation_range=40, width_shift_range=0.2, height_shift_range=0.2,
                   shear_range=0.2, zoom_range=0.2, horizontal_flip=True, fill_mode='nearest'
                   ))
-val_datagen = (ImageDataGenerator(rescale=1.0 / 255))
-test_datagen = (ImageDataGenerator(rescale=1.0 / 255))
+val_datagen = (ImageDataGenerator(rescale=1. / 255))
+test_datagen = (ImageDataGenerator(rescale=1. / 255))
 
 # Pobieranie i przetwarzanie danych
-train_generator = train_datagen.flow_from_directory(train_dir, target_size=(224, 224), class_mode='categorical',
-                                                    color_mode='rgb')
-val_generator = val_datagen.flow_from_directory(val_dir, target_size=(224, 224), class_mode='categorical',
-                                                color_mode='rgb')
-test_generator = test_datagen.flow_from_directory(test_dir, target_size=(224, 224), class_mode='categorical',
-                                                  color_mode='rgb')
+train_generator = train_datagen.flow_from_directory(train_dir, target_size=(224, 224), batch_size=8,
+                                                    class_mode='categorical', color_mode='rgb')
+val_generator = val_datagen.flow_from_directory(val_dir, target_size=(224, 224), batch_size=8,
+                                                class_mode='categorical', color_mode='rgb')
+test_generator = test_datagen.flow_from_directory(test_dir, target_size=(224, 224), batch_size=8,
+                                                  class_mode='categorical', color_mode='rgb')
 
 # Ładowanie modelu:
 # base_model = InceptionV3(input_shape=(224,224, 3), include_top=False,weights='imagenet')
@@ -42,7 +44,7 @@ base_model = MobileNetV2(input_shape=(224, 224, 3), include_top=False, weights='
 
 # Nazwa modelu
 model_name = base_model.name
-model_name = model_name[:-9]
+model_name = model_name[:-11]
 
 # Zamrożenie wag modelu bazowego
 base_model.trainable = False
@@ -57,17 +59,18 @@ model = Sequential([
     layers.MaxPooling2D((2, 2)),
     layers.BatchNormalization(),
     layers.Conv2D(64, (2, 2), activation='relu', padding='same'),
+    layers.BatchNormalization(),
+    layers.Conv2D(128, (2, 2), activation='relu', padding='same'),
     layers.MaxPooling2D((1, 1)),
     layers.Flatten(),
-    layers.Dense(128, activation='relu'),
-    layers.Dropout(0.2),
+    layers.Dense(256, activation='relu'),
+    # layers.Dropout(0.25),
     layers.Dense(2, activation='sigmoid')
 ])
 
 # Kompilacja modelu
 model.compile(optimizer='adam',
-              loss='binary_crossentropy',
-              # loss='categorical_crossentropy',
+              loss='categorical_crossentropy',
               metrics=['accuracy'])
 
 # Folder na wyniki
@@ -80,7 +83,7 @@ result_file_path = os.path.join(result_folder, result_file_name)
 
 # Katalog TensorBoard
 log_dir = (f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/'
-           f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}..Dropout_0.5+CalySet')
+           f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}..Bez Dro+256')
 # log_dir_train = f'E:/USERS/dominik.roczan/PycharmProjects/logs{model_name}_{datetime.now().strftime("%Y%m%d-%H%M")}/train'
 
 os.makedirs(log_dir, exist_ok=True)
@@ -100,11 +103,12 @@ model.fit_generator(generator=train_generator,
                     validation_data=val_generator,
                     validation_steps=len(val_generator),
                     epochs=22,
-                    callbacks=[tensorboard_train]
+                   callbacks=[tensorboard_train]
                     )
 
 # Zapis modelu do pliku .h5
-model.save(f'{model_name}.h5')
+model.save(f'{model_name}.h5'),
+
 
 # Podsumowanie modelu
 model.summary()

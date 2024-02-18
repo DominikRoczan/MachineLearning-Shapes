@@ -1,28 +1,28 @@
 Model Name: mobilenetv2
 
-Data: 2024-02-15 01:19:24.469116
-Training Duration: 0:07:53.372691
+Data: 2024-02-17 16:46:55.296202
+Training Duration: 0:08:51.062408
 
-Train Accuracy: 0.9858
-Validation Accuracy: 0.9778
-Test Accuracy: 0.9467
+Train Accuracy: 0.9799
+Validation Accuracy: 0.9494
+Test Accuracy: 1.0
 
-Train loss: 0.0383
-Validation loss: 0.0426
-Test loss: 0.2115
+Train loss: 0.0539
+Validation loss: 0.0838
+Test loss: 0.0134
 
 
 Classification Report:
               precision    recall  f1-score   support
 
-           0       0.53      0.52      0.53       330
-           1       0.50      0.51      0.50       305
+           0       0.56      0.54      0.55       392
+           1       0.43      0.45      0.44       305
 
-    accuracy                           0.51       635
-   macro avg       0.51      0.51      0.51       635
-weighted avg       0.52      0.51      0.52       635
+    accuracy                           0.50       697
+   macro avg       0.49      0.49      0.49       697
+weighted avg       0.50      0.50      0.50       697
 
 
 Confusion Matrix:
-[[171, 159],
- [149, 156]]
+[[210, 182],
+ [168, 137]]

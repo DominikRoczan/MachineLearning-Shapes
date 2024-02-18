@@ -1,0 +1,28 @@
+Model Name: mobilenet
+
+Data: 2024-02-17 20:05:04.711778
+Training Duration: 0:00:50.364258
+
+Train Accuracy: 0.9367
+Validation Accuracy: 0.9873
+Test Accuracy: 0.9552
+
+Train loss: 0.3893
+Validation loss: 0.3805
+Test loss: 0.3308
+
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.56      0.60      0.58       422
+           2       0.38      0.34      0.36       305
+
+    accuracy                           0.49       727
+   macro avg       0.47      0.47      0.47       727
+weighted avg       0.49      0.49      0.49       727
+
+
+Confusion Matrix:
+[[255, 167],
+ [201, 104]]
