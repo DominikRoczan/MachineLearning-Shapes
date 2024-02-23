@@ -18,7 +18,7 @@ model_path = 'mobilenet+3_Classes.h5'  # Zmień ścieżkę do twojego modelu
 model = load_model(model_path)
 
 
-img_path = '100.jpg'
+img_path = '107.jpg'
 imag = img_path
 
 img_size = (224, 224)
@@ -82,6 +82,8 @@ heatmap = make_gradcam_heatmap(img_array, model, last_conv_layer_name)
 
 # Zapisz i wyświetl Grad-CAM
 save_and_display_gradcam(imag, heatmap)
+
+
 
 # Wyświetl heatmapę
 plt.matshow(heatmap)

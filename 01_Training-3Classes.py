@@ -24,7 +24,7 @@ test_dir = os.path.join(base_dir, 'test')
 
 def custom_preprocessing(image):
     # Odjęcie 125 od wartości pikseli
-    return image - 125
+    return image
 
 
 # Konfiguracja generatorów danych
@@ -43,12 +43,13 @@ test_datagen = ImageDataGenerator(
     preprocessing_function=custom_preprocessing,
     rescale=1. / 255
 )
+batch_size = 128
 
 # Pobieranie i przetwarzanie danych
 train_generator = train_datagen.flow_from_directory(
     train_dir,
     target_size=(224, 224),
-    batch_size=1,
+    batch_size=batch_size,
     class_mode='categorical',
     color_mode='rgb',
     # classes=['Circle', 'Not found', 'Triangle']
@@ -57,7 +58,7 @@ train_generator = train_datagen.flow_from_directory(
 val_generator = val_datagen.flow_from_directory(
     val_dir,
     target_size=(224, 224),
-    batch_size=1,
+    batch_size=batch_size,
     class_mode='categorical',
     color_mode='rgb',
     # classes=['Circle', 'Not found', 'Triangle']
@@ -66,7 +67,7 @@ val_generator = val_datagen.flow_from_directory(
 test_generator = test_datagen.flow_from_directory(
     test_dir,
     target_size=(224, 224),
-    batch_size=2,
+    batch_size=batch_size,
     class_mode='categorical',
     color_mode='rgb',
     # classes=['Circle', 'Not found', 'Triangle']
@@ -113,9 +114,10 @@ result_file_name = f"{model_name}+3Classes.txt"
 result_file_path = os.path.join(result_folder, result_file_name)
 
 # Katalog TensorBoard
-log_dir = (f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/'
+# log_dir = (f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/'
+#            f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}')
+log_dir = (f'E:/USERS/dominik.roczan/PycharmProjects/logs/'
            f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}')
-# log_dir_train = f'E:/USERS/dominik.roczan/PycharmProjects/logs{model_name}_{datetime.now().strftime("%Y%m%d-%H%M")}/train'
 
 os.makedirs(log_dir, exist_ok=True)
 
@@ -133,7 +135,7 @@ model.fit_generator(generator=train_generator,
                     steps_per_epoch=len(train_generator),
                     validation_data=val_generator,
                     validation_steps=len(val_generator),
-                    epochs=26,
+                    epochs=22,
                     callbacks=[tensorboard_train]
                     )
 
