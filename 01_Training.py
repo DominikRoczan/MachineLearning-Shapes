@@ -79,6 +79,7 @@ os.makedirs(result_folder, exist_ok=True)
 
 # Nazwa pliku tekstowego
 result_file_name = f"{model_name}.txt"
+
 result_file_path = os.path.join(result_folder, result_file_name)
 
 # Katalog TensorBoard
@@ -102,7 +103,7 @@ model.fit_generator(generator=train_generator,
                     steps_per_epoch=len(train_generator),
                     validation_data=val_generator,
                     validation_steps=len(val_generator),
-                    epochs=22,
+                    epochs=2,
                    callbacks=[tensorboard_train]
                     )
 

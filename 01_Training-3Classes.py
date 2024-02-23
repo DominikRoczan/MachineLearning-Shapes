@@ -4,11 +4,11 @@
 # co on drukuje print(image)
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications import (MobileNetV2, MobileNetV3Small, InceptionV3, InceptionResNetV2, )
+from tensorflow.keras.applications import (MobileNetV2, InceptionV3)
 from tensorflow.keras.models import Sequential
 from tensorflow.keras import layers
 from keras.callbacks import TensorBoard
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 import numpy as np
 import os
 from datetime import datetime
@@ -21,19 +21,34 @@ train_dir = os.path.join(base_dir, 'train')
 val_dir = os.path.join(base_dir, 'val')
 test_dir = os.path.join(base_dir, 'test')
 
+
+def custom_preprocessing(image):
+    # Odjęcie 125 od wartości pikseli
+    return image - 125
+
+
 # Konfiguracja generatorów danych
 train_datagen = (ImageDataGenerator
-                 (rescale=1. / 255, rotation_range=40, width_shift_range=0.2, height_shift_range=0.2,
+                 (preprocessing_function=custom_preprocessing, rescale=1. / 255,
+                  rotation_range=40, width_shift_range=0.2, height_shift_range=0.2,
                   shear_range=0.2, zoom_range=0.2, horizontal_flip=True, fill_mode='nearest'
                   ))
-val_datagen = (ImageDataGenerator(rescale=1. / 255))
-test_datagen = (ImageDataGenerator(rescale=1. / 255))
+
+val_datagen = ImageDataGenerator(
+    preprocessing_function=custom_preprocessing,
+    rescale=1. / 255
+)
+
+test_datagen = ImageDataGenerator(
+    preprocessing_function=custom_preprocessing,
+    rescale=1. / 255
+)
 
 # Pobieranie i przetwarzanie danych
 train_generator = train_datagen.flow_from_directory(
     train_dir,
     target_size=(224, 224),
-    batch_size=8,
+    batch_size=1,
     class_mode='categorical',
     color_mode='rgb',
     # classes=['Circle', 'Not found', 'Triangle']
@@ -42,7 +57,7 @@ train_generator = train_datagen.flow_from_directory(
 val_generator = val_datagen.flow_from_directory(
     val_dir,
     target_size=(224, 224),
-    batch_size=8,
+    batch_size=1,
     class_mode='categorical',
     color_mode='rgb',
     # classes=['Circle', 'Not found', 'Triangle']
@@ -51,7 +66,7 @@ val_generator = val_datagen.flow_from_directory(
 test_generator = test_datagen.flow_from_directory(
     test_dir,
     target_size=(224, 224),
-    batch_size=8,
+    batch_size=2,
     class_mode='categorical',
     color_mode='rgb',
     # classes=['Circle', 'Not found', 'Triangle']
@@ -60,7 +75,6 @@ test_generator = test_datagen.flow_from_directory(
 # Ładowanie modelu:
 # base_model = InceptionV3(input_shape=(224,224, 3), include_top=False,weights='imagenet')
 base_model = MobileNetV2(input_shape=(224, 224, 3), include_top=False, weights='imagenet')
-# base_model = InceptionResNetV2(input_shape=(224, 224, 3), include_top=False,weights='imagenet')
 
 # Nazwa modelu
 model_name = base_model.name
@@ -72,18 +86,15 @@ base_model.trainable = False
 # Budowa model
 model = Sequential([
     base_model,
+    # layers.Conv2D(16, (2, 2), activation='sigmoid', padding='same'),
+    # layers.MaxPooling2D((2, 2)),
+    # layers.BatchNormalization(),
     layers.Conv2D(16, (2, 2), activation='sigmoid', padding='same'),
-    layers.MaxPooling2D((2, 2)),
     layers.BatchNormalization(),
-    layers.Conv2D(32, (2, 2), activation='sigmoid', padding='same'),
-    layers.MaxPooling2D((2, 2)),
-    layers.BatchNormalization(),
-    layers.Conv2D(64, (2, 2), activation='relu', padding='same'),
-    layers.BatchNormalization(),
-    layers.Conv2D(128, (2, 2), activation='relu', padding='same'),
+    layers.Conv2D(32, (2, 2), activation='relu', padding='same'),
     layers.MaxPooling2D((1, 1)),
     layers.Flatten(),
-    layers.Dense(256, activation='relu'),
+    layers.Dense(64, activation='relu'),
     # layers.Dropout(0.25),
     layers.Dense(3, activation='softmax')
 ])
@@ -103,7 +114,7 @@ result_file_path = os.path.join(result_folder, result_file_name)
 
 # Katalog TensorBoard
 log_dir = (f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/'
-           f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}..Bez Dro+256')
+           f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}')
 # log_dir_train = f'E:/USERS/dominik.roczan/PycharmProjects/logs{model_name}_{datetime.now().strftime("%Y%m%d-%H%M")}/train'
 
 os.makedirs(log_dir, exist_ok=True)
@@ -122,7 +133,7 @@ model.fit_generator(generator=train_generator,
                     steps_per_epoch=len(train_generator),
                     validation_data=val_generator,
                     validation_steps=len(val_generator),
-                    epochs=2,
+                    epochs=26,
                     callbacks=[tensorboard_train]
                     )
 
@@ -145,7 +156,6 @@ y_pred = np.argmax(model.predict(train_generator), axis=1)  # przewidziane etyki
 classification_rep = classification_report(y_true, y_pred, zero_division=0)
 conf_matrix = confusion_matrix(y_true, y_pred)
 accuracy = accuracy_score(y_true, y_pred)
-
 
 # Wyniki na zbiorze treningowym
 train_results = model.evaluate(train_generator)

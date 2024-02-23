@@ -3,7 +3,8 @@ import os
 import cv2
 import numpy as np
 
-image_path = ('new_Image/X/23.jpg')
+
+from _ImagePath import image_path
 image = cv2.imread(image_path)
 
 # Konwertuj obraz na odcienie szarości
@@ -22,7 +23,7 @@ draw_image = cv2.drawContours(image.copy(), contours, -1, (0, 0, 255), 3)
 
 # Wyświetl obraz z zaznaczonymi obszarami i podpisanymi kształtami`
 
-cv2.imshow(f'{image_path[16:]}', draw_image)
+cv2.imshow(f'{image_path}', draw_image)
 
 contours = len(contours)
 print(f'All contours: {contours}')
