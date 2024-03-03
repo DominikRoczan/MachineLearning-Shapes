@@ -1,11 +1,4 @@
-# yolo
-# heatmapa do mojego
-# chat niecha napisze funkcje dla mnie
-# stworz anonnator
-
-import os
-
-from LabTrain import *
+from Training import *
 
 # Pobranie nazw klas
 class_names = list(class_indices.keys())
@@ -16,15 +9,14 @@ predictions_test = model.predict(test_generator)
 
 directory_name = 'Labels'
 os.makedirs(directory_name, exist_ok=True)
-
 file_name = 'Labels.txt'
-
 result_dir = os.path.join(directory_name, file_name)
+
 # Iteracja po danych walidacyjnych i ich przewidywaniach
 
 with open(result_dir, 'w') as file:
     file.write(f'Classe: {indices_to_classes}' + '\n')
-    file.write(f'Epochs: {epochs}' + '\n' + '\n')
+    # file.write(f'Epochs: {epochs}' + '\n' + '\n')
 
     for i, (image_batch_val, label_batch_val) in enumerate(val_generator):
         # Przerwanie pętli po wszystkich wsadach walidacyjnych
@@ -59,7 +51,7 @@ result_dir2 = os.path.join(directory_name_2, file_name2)
 # Iteracja po danych testowych i ich przewidywaniach
 with open(result_dir2, 'w') as file:
     file.write(f'Classe: {indices_to_classes}' + '\n')
-    file.write(f'Epochs: {epochs}'+'\n'+'\n')
+    # file.write(f'Epochs: {epochs}'+'\n'+'\n')
 
     for i, (image_batch_test, label_batch_test) in enumerate(test_generator):
         # Przerwanie pętli po wszystkich wsadach testowych

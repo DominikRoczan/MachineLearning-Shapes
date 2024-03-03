@@ -1,7 +1,5 @@
-
-image_path = 'heatmap/107.jpg'
-
-
+# image_path = 'new_Image/107.jpg'
+image_path = 'circles_test/CIRCLES_115.jpg'
 
 # # Wydruk wszystkich pikseli
 # import cv2
