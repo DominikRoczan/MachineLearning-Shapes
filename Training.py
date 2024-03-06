@@ -1,8 +1,11 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras import layers
-from keras.callbacks import TensorBoard
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import BinaryCrossentropy, BinaryFocalCrossentropy, Hinge
+# Callbacks
+from keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 import numpy as np
 import os
@@ -22,16 +25,18 @@ train_datagen = (ImageDataGenerator
                  (rescale=1. / 255 - 125, rotation_range=40, width_shift_range=0.2, height_shift_range=0.2,
                   shear_range=0.2, zoom_range=0.2, horizontal_flip=True, fill_mode='nearest'
                   ))
-val_datagen = (ImageDataGenerator(rescale=1. / 255))
-test_datagen = (ImageDataGenerator(rescale=1. / 255))
+val_datagen = (ImageDataGenerator(rescale=1. / 255 - 125))
+test_datagen = (ImageDataGenerator(rescale=1. / 255 - 125))
 
 # Pobieranie i przetwarzanie danych
+
+class_mode = 'categorical'
 train_generator = train_datagen.flow_from_directory(train_dir, target_size=(224, 224), batch_size=128,
-                                                    class_mode='categorical', color_mode='rgb')
+                                                    class_mode=class_mode, color_mode='rgb')
 val_generator = val_datagen.flow_from_directory(val_dir, target_size=(224, 224), batch_size=128,
-                                                class_mode='categorical', color_mode='rgb')
+                                                class_mode=class_mode, color_mode='rgb')
 test_generator = test_datagen.flow_from_directory(test_dir, target_size=(224, 224), batch_size=128,
-                                                  class_mode='categorical', color_mode='rgb')
+                                                  class_mode=class_mode, color_mode='rgb')
 
 # Ładowanie modelu:
 base_model = MobileNetV2(input_shape=(224, 224, 3), include_top=False, weights='imagenet')
@@ -46,24 +51,38 @@ base_model.trainable = False
 # Budowa model
 model = Sequential([
     base_model,
+    layers.Conv2D(8, (2, 2), activation='sigmoid', padding='same'),
+    layers.MaxPooling2D((1, 1)),  # Poprawione
+    layers.BatchNormalization(),
 
-    # layers.Conv2D(16, (2, 2), activation='sigmoid', padding='same'),
-    # layers.MaxPooling2D((2, 2)),
-    # layers.BatchNormalization(),
-    # layers.Conv2D(32, (2, 2), activation='sigmoid', padding='same'),
-    # layers.MaxPooling2D((2, 2)),
-    # layers.BatchNormalization(),
-    layers.Conv2D(64, (2, 2), activation='relu', padding='same'),
+    layers.Conv2D(16, (2, 2), activation='sigmoid', padding='same'),
+    layers.MaxPooling2D((2, 2)),
+    layers.BatchNormalization(),
+
+    layers.Conv2D(32, (4, 4), activation='sigmoid', padding='same'),
+    layers.MaxPooling2D((2, 2)),
+    layers.BatchNormalization(),
+
+    layers.Conv2D(64, (8, 8), activation='relu', padding='same'),
+    layers.BatchNormalization(),
+
+    layers.Conv2D(256, (16, 16), activation='relu', padding='same'),
+    layers.BatchNormalization(),
+
+    layers.Conv2D(512, (32, 32), activation='relu', padding='same'),
     layers.MaxPooling2D((1, 1)),
+    layers.BatchNormalization(),
+
     layers.Flatten(),
-    layers.Dense(128, activation='relu'),
+    layers.Dense(32, activation='relu'),
+
     layers.Dropout(0.25),
     layers.Dense(2, activation='sigmoid')
 ])
 
 # Kompilacja modelu
-model.compile(optimizer='adam',
-              loss='binary_crossentropy',
+model.compile(optimizer=Adam(learning_rate=0.01),
+              loss=BinaryCrossentropy(),
               metrics=['accuracy'])
 
 # Folder na wyniki
@@ -74,10 +93,11 @@ os.makedirs(result_folder, exist_ok=True)
 result_file_name = f"{model_name}+2Classes.txt"
 result_file_path = os.path.join(result_folder, result_file_name)
 
-# Katalog TensorBoard
-log_dir = (f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/'
+# Directory TensorBoard
+# log_dir = (f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/'
+#            f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}')
+log_dir = (f'E:/USERS/dominik.roczan/PycharmProjects/logs/'
            f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}')
-# log_dir_train = f'E:/USERS/dominik.roczan/PycharmProjects/logs{model_name}_{datetime.now().strftime("%Y%m%d-%H%M")}/train'
 
 os.makedirs(log_dir, exist_ok=True)
 
@@ -87,6 +107,17 @@ tensorboard_train = TensorBoard(log_dir=log_dir, histogram_freq=0, write_graph=F
 # Wywołanie tensorboard w konsoli: tensorboard --logdir=C:/USERS/domin/OneDrive/Pulpit/Python/logs
 # Wywołanie tensorboard w konsoli: tensorboard --logdir=E:/USERS/dominik.roczan/PycharmProjects/logs
 
+
+# Directory Checkpoint
+checkpoint_filepath = 'results/checkpoint.model.keras'
+
+model_checkpoint_callback = ModelCheckpoint(
+    filepath=checkpoint_filepath,
+    monitor='val_accuracy',
+    mode='max',
+    save_best_only=True
+)
+
 # Początek czasu treningu
 start_time = datetime.now()
 
@@ -95,12 +126,17 @@ model.fit_generator(generator=train_generator,
                     steps_per_epoch=len(train_generator),
                     validation_data=val_generator,
                     validation_steps=len(val_generator),
-                    epochs=32,
-                    callbacks=[tensorboard_train]
+                    epochs=22,
+                    callbacks=[tensorboard_train, model_checkpoint_callback]
                     )
 
+# The model (that are considered the best) can be loaded as -
+best_model = load_model(checkpoint_filepath)
+
 # Zapis modelu do pliku .h5
-model.save(f'{model_name}+2_Classe.h5'),
+model.save(f'{model_name}+2_Classe.h5')
+best_model.save(f'{model_name}+2_Classe.h5')
+print(f'Debesciak: {best_model}')
 
 # Podsumowanie modelu
 model.summary()
@@ -111,8 +147,8 @@ training_duration = end_time - start_time
 save_model = datetime.now()
 
 # Pobierz dane do oceny modelu
-y_true = train_generator.labels  # prawdziwe etykiety z generatora danych
-y_pred = np.argmax(model.predict(train_generator), axis=1)  # przewidziane etykiety modelu
+y_true = test_generator.labels  # prawdziwe etykiety z generatora danych
+y_pred = np.argmax(model.predict(test_generator), axis=1)  # przewidziane etykiety modelu
 
 # Ocena modelu
 classification_rep = classification_report(y_true, y_pred, zero_division=1)
