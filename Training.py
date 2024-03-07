@@ -2,8 +2,8 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras import layers
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import BinaryCrossentropy, BinaryFocalCrossentropy, Hinge
+from tensorflow.keras.optimizers import Adam,SGD
+from tensorflow.keras.losses import BinaryCrossentropy, CategoricalCrossentropy
 # Callbacks
 from keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
@@ -52,7 +52,7 @@ base_model.trainable = False
 model = Sequential([
     base_model,
     layers.Conv2D(8, (2, 2), activation='sigmoid', padding='same'),
-    layers.MaxPooling2D((1, 1)),  # Poprawione
+    layers.MaxPooling2D((1, 1)),
     layers.BatchNormalization(),
 
     layers.Conv2D(16, (2, 2), activation='sigmoid', padding='same'),
@@ -67,22 +67,19 @@ model = Sequential([
     layers.BatchNormalization(),
 
     layers.Conv2D(256, (16, 16), activation='relu', padding='same'),
-    layers.BatchNormalization(),
-
-    layers.Conv2D(512, (32, 32), activation='relu', padding='same'),
     layers.MaxPooling2D((1, 1)),
     layers.BatchNormalization(),
 
     layers.Flatten(),
-    layers.Dense(32, activation='relu'),
+    layers.Dense(16, activation='relu'),
 
     layers.Dropout(0.25),
     layers.Dense(2, activation='sigmoid')
 ])
 
 # Kompilacja modelu
-model.compile(optimizer=Adam(learning_rate=0.01),
-              loss=BinaryCrossentropy(),
+model.compile(optimizer=Adam(learning_rate=0.001),
+              loss=CategoricalCrossentropy(),
               metrics=['accuracy'])
 
 # Folder na wyniki
@@ -111,12 +108,29 @@ tensorboard_train = TensorBoard(log_dir=log_dir, histogram_freq=0, write_graph=F
 # Directory Checkpoint
 checkpoint_filepath = 'results/checkpoint.model.keras'
 
-model_checkpoint_callback = ModelCheckpoint(
-    filepath=checkpoint_filepath,
-    monitor='val_accuracy',
-    mode='max',
-    save_best_only=True
-)
+
+def model_checkpoint_callback():
+    return ModelCheckpoint(
+        filepath=checkpoint_filepath,
+        monitor='val_accuracy',
+        mode='max',
+        save_best_only=True,
+        verbose=1
+    )
+
+
+def early_stopping():
+    return EarlyStopping(
+        monitor="val_loss",
+        min_delta=0,
+        patience=3,
+        mode="min",
+        baseline=None,
+        restore_best_weights=False,
+        start_from_epoch=0,
+        verbose=1
+    )
+
 
 # Początek czasu treningu
 start_time = datetime.now()
@@ -126,8 +140,8 @@ model.fit_generator(generator=train_generator,
                     steps_per_epoch=len(train_generator),
                     validation_data=val_generator,
                     validation_steps=len(val_generator),
-                    epochs=22,
-                    callbacks=[tensorboard_train, model_checkpoint_callback]
+                    epochs=16,
+                    callbacks=[tensorboard_train, model_checkpoint_callback(), early_stopping()]
                     )
 
 # The model (that are considered the best) can be loaded as -
@@ -135,11 +149,10 @@ best_model = load_model(checkpoint_filepath)
 
 # Zapis modelu do pliku .h5
 model.save(f'{model_name}+2_Classe.h5')
-best_model.save(f'{model_name}+2_Classe.h5')
-print(f'Debesciak: {best_model}')
+best_model.save(f'best.{model_name}+2_Classe.h5')
 
 # Podsumowanie modelu
-model.summary()
+best_model.summary()
 
 # Koniec czasu treningu
 end_time = datetime.now()
@@ -148,7 +161,7 @@ save_model = datetime.now()
 
 # Pobierz dane do oceny modelu
 y_true = test_generator.labels  # prawdziwe etykiety z generatora danych
-y_pred = np.argmax(model.predict(test_generator), axis=1)  # przewidziane etykiety modelu
+y_pred = np.argmax(best_model.predict(test_generator), axis=1)  # przewidziane etykiety modelu
 
 # Ocena modelu
 classification_rep = classification_report(y_true, y_pred, zero_division=1)
@@ -156,21 +169,21 @@ conf_matrix = confusion_matrix(y_true, y_pred)
 accuracy = accuracy_score(y_true, y_pred)
 
 # Wyniki na zbiorze treningowym
-train_results = model.evaluate(train_generator)
+train_results = best_model.evaluate(train_generator)
 loss_train_results = round(train_results[0], 4)
 acc_train_results = round(train_results[1], 4)
 print("Train Loss:", loss_train_results)
 print("Train Accuracy:", acc_train_results)
 
 # Wyniki na zbiorze walidacyjnym
-val_results = model.evaluate(val_generator)
+val_results = best_model.evaluate(val_generator)
 loss_val_results = round(val_results[0], 4)
 acc_val_results = round(val_results[1], 4)
 print("Validation Loss:", loss_val_results)
 print("Validation Accuracy:", acc_val_results)
 
 # Wyniki na zbiorze testowym
-test_results = model.evaluate(test_generator)
+test_results = best_model.evaluate(test_generator)
 loss_test_results = round(test_results[0], 4)
 acc_test_results = round(test_results[1], 4)
 print("Test Loss:", loss_test_results)
