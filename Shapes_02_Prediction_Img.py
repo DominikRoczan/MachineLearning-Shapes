@@ -7,7 +7,7 @@ model_path = 'mobilenet+2_Classe.h5'
 model = load_model(model_path)
 
 # Wczytaj obraz
-from _ImagePath import image_path
+from Shapes_25_ImagePath import image_path
 
 image = cv2.imread(image_path)
 

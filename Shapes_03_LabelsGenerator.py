@@ -1,4 +1,4 @@
-from Training import *
+from Shapes_01_Training import *
 
 # Pobranie nazw klas
 class_names = list(class_indices.keys())
