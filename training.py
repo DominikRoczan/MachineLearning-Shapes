@@ -1,7 +1,24 @@
-from Shapes_20_Imports import *
+# keras
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras import layers
+from tensorflow.keras.optimizers import Adam, SGD
+from tensorflow.keras.layers import ReLU, LeakyReLU
+from tensorflow.keras.losses import BinaryCrossentropy, CategoricalCrossentropy
 
+#numpy
+import numpy as np
 
-# from Shapes_21_Prints import *
+# Callbacks
+from keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+
+import os
+from datetime import datetime
+
+# from Shapes_21_Prints import *git
 
 
 def path_datasets():

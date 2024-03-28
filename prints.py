@@ -1,4 +1,4 @@
-from Shapes_01_Training import *
+from training import *
 
 
 """Save results to a text file."""
