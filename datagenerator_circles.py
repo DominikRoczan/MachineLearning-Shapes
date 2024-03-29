@@ -21,11 +21,11 @@ def generate_background_with_circles(width, height, num_jpg_circles, destination
         image = Image.new('RGB', (width, height), color=background_color)
         draw = ImageDraw.Draw(image)
 
-        # Random number of circles and discs in the image
-        num_shapes = 1
+        # Number of circles and discs in the image
+        num_circles = 1
 
         # Drawing circles and discs
-        for _ in range(num_shapes):
+        for _ in range(num_circles):
             x1 = random.randint(0, width)
             y1 = random.randint(0, height)
             radius = random.randint(10, min(width, height) // 2)
@@ -77,7 +77,8 @@ width = 224
 height = 224
 num_jpg_circle = 40
 source_path = 'Generator'
-root_circles = os.path.join(source_path, 'Circles')
+destination_path_circles = os.path.join(source_path, 'Circles')
 
-generate_multiple_images(width, height, num_jpg_circle, root_circles)
-storage(num_jpg_circle, root_circles, root_circles)
+if __name__ == "__main__":
+    generate_multiple_images(width, height, num_jpg_circle, destination_path_circles)
+    storage(num_jpg_circle, destination_path_circles, destination_path_circles)

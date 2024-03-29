@@ -3,40 +3,58 @@ import random
 import os
 import shutil
 
-def generuj_tlo_z_trojkatami(szerokosc, wysokosc, ilosc_jpg_tr, destination_path_triangles):
-    # Funkcja generująca obrazy z losowymi trójkątami
-    for i in range(ilosc_jpg_tr):
-        # Losowy kolor tła dla każdego obrazu
-        tlo = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        obraz = Image.new('RGB', (szerokosc, wysokosc), color=tlo)
-        draw = ImageDraw.Draw(obraz)
 
-        # Losowa liczba trójkątów w obrazie
-        # ilosc_trojkatow = random.randint(1, 5)
-        ilosc_trojkatow = 1
+def generate_background_with_triangles(width, height, num_jpg_tr, destination_path_triangles):
+    """
+    Generates images with random triangles.
 
-        # Rysowanie trójkątów
-        for _ in range(ilosc_trojkatow):
-            punkty = []
-            # Losowe współrzędne wierzchołków trójkąta
+    Args:
+        width (int): Width of the images.
+        height (int): Height of the images.
+        num_jpg_tr (int): Number of images to generate.
+        destination_path_triangles (str): Path to save the generated images.
+    """
+    for i in range(num_jpg_tr):
+        # Random background color for each image
+        background = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        image = Image.new('RGB', (width, height), color=background)
+        draw = ImageDraw.Draw(image)
+
+        # Number of triangles in the image
+        num_triangles = 1
+
+        # Drawing triangles
+        for _ in range(num_triangles):
+            points = []
+            # Random coordinates of triangle vertices
             for _ in range(3):
-                x = random.randint(0, szerokosc)
-                y = random.randint(0, wysokosc)
-                punkty.append((x, y))
+                x = random.randint(0, width)
+                y = random.randint(0, height)
+                points.append((x, y))
 
-            # Losowe wypełnienie i krawędź trójkąta
-            wypelnienie = random.choice([None, (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))])
-            draw.polygon(punkty, fill=wypelnienie, outline=wypelnienie)
+            # Random fill and outline for the triangles
+            fill_color = random.choice([None, (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))])
+            draw.polygon(points, fill=fill_color, outline=fill_color)
 
-        # Zapisywanie obrazu
-        obraz.save(os.path.join(destination_path_triangles, f'TRIANGLES_{i + 1}.jpg'), format='JPEG')
+        # Saving the image
+        image.save(os.path.join(destination_path_triangles, f'TRIANGLES_{i + 1}.jpg'), format='JPEG')
 
-def generuj_wiele_obrazow(szerokosc, wysokosc, ilosc_jpg_tr, destination_path):
-    # Funkcja generująca wiele obrazów
+
+def generate_multiple_images(width, height, num_jpg_tr, destination_path):
+    """
+    Generates multiple images.
+
+    Args:
+        width (int): Width of the images.
+        height (int): Height of the images.
+        num_jpg_tr (int): Number of images to generate.
+        destination_path (str): Path to save the generated images.
+    """
     os.makedirs(destination_path, exist_ok=True)
-    generuj_tlo_z_trojkatami(szerokosc, wysokosc, ilosc_jpg_tr, destination_path)
+    generate_background_with_triangles(width, height, num_jpg_tr, destination_path)
 
-def przechowalnia(ilosc_jpg_tr, source_path, destination_path_triangles):
+
+def storage(ilosc_jpg_tr, source_path, destination_path_triangles):
     # Tworzenie katalogu docelowego
     os.makedirs(destination_path_triangles, exist_ok=True)
     for i in range(ilosc_jpg_tr):
@@ -48,12 +66,12 @@ def przechowalnia(ilosc_jpg_tr, source_path, destination_path_triangles):
             pass
 
 
-
-szerokosc = 224
-wysokosc = 224
-ilosc_jpg_tr = 40
+width = 224
+height = 224
+num_jpg_tr = 40
 source_path = 'Generator'
 destination_path_triangles = os.path.join(source_path, 'Triangles')
 
-generuj_wiele_obrazow(szerokosc, wysokosc, ilosc_jpg_tr, destination_path_triangles)
-przechowalnia(ilosc_jpg_tr, destination_path_triangles, destination_path_triangles)
+if __name__ == "__main__":
+    generate_multiple_images(width, height, num_jpg_tr, destination_path_triangles)
+    storage(num_jpg_tr, destination_path_triangles, destination_path_triangles)
