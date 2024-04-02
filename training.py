@@ -1,7 +1,7 @@
 # tensorflow
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras import layers
 from tensorflow.keras.optimizers import Adam
@@ -17,7 +17,7 @@ import numpy as np
 import os
 from datetime import datetime
 
-from prints import prints
+# from prints import results
 
 
 def path_datasets():
@@ -76,78 +76,90 @@ def data_processing(train_dir, val_dir, test_dir, class_mode='binary', batch_siz
     return train_generator, val_generator, test_generator, class_mode, batch_size
 
 
-base_model = MobileNetV2(input_shape=(224, 224, 3), include_top=False, weights='imagenet')
+def get_base_model():
+    base_model = MobileNetV2(input_shape=(224, 224, 3), include_top=False, weights='imagenet')
 
-# Nazwa modelu
-model_name = base_model.name
-model_name = model_name[:-11]
+    # Nazwa modelu
+    model_name = base_model.name
+    model_name = model_name[:-11]
 
-# Zamrożenie wag modelu bazowego
-base_model.trainable = False
+    # Zamrożenie wag modelu bazowego
+    base_model.trainable = False
+    return model_name, base_model
 
-# Budowa model
-model = Sequential([
-    base_model,
-    layers.Conv2D(8, (2, 2), activation='sigmoid', padding='same'),
-    layers.MaxPooling2D((1, 1)),
-    layers.BatchNormalization(),
 
-    layers.Conv2D(16, (2, 2), activation='sigmoid', padding='same'),
-    layers.MaxPooling2D((2, 2)),
-    layers.BatchNormalization(),
+def build_model(base_model):
+    # Budowa model
+    model = Sequential([
+        base_model,
+        layers.Conv2D(8, (2, 2), activation='sigmoid', padding='same'),
+        layers.MaxPooling2D((1, 1)),
+        layers.BatchNormalization(),
 
-    layers.Conv2D(32, (16, 16), activation='sigmoid', padding='same'),
-    layers.MaxPooling2D((2, 2)),
-    layers.BatchNormalization(),
+        layers.Conv2D(16, (2, 2), activation='sigmoid', padding='same'),
+        layers.MaxPooling2D((2, 2)),
+        layers.BatchNormalization(),
 
-    layers.Conv2D(64, (16, 16), activation='relu', padding='same'),
-    layers.MaxPooling2D((1, 1)),
-    layers.BatchNormalization(),
+        layers.Conv2D(32, (16, 16), activation='sigmoid', padding='same'),
+        layers.MaxPooling2D((2, 2)),
+        layers.BatchNormalization(),
 
-    layers.Flatten(),
-    layers.Dense(16, activation='relu'),
+        layers.Conv2D(64, (16, 16), activation='relu', padding='same'),
+        layers.MaxPooling2D((1, 1)),
+        layers.BatchNormalization(),
 
-    # layers.Dropout(0.25),
-    layers.Dense(1, activation='sigmoid')
-])
-# model.summary()
+        layers.Flatten(),
+        layers.Dense(16, activation='relu'),
 
-# Kompilacja modelu
-model.compile(optimizer=Adam(learning_rate=0.0001),
-              loss=BinaryCrossentropy(),
-              metrics=['accuracy']
-              )
+        # layers.Dropout(0.25),
+        layers.Dense(1, activation='sigmoid')
+    ])
+    # model.summary()
+    return model
 
-# Folder na wyniki
-result_folder = 'results'
-os.makedirs(result_folder, exist_ok=True)
 
-# Nazwa pliku tekstowego
-result_file_name = f"{model_name}+2Classes+++working.txt"
-result_file_path = os.path.join(result_folder, result_file_name)
+def compile_model(model):
+    # Kompilacja modelu
+    model.compile(optimizer=Adam(learning_rate=0.0001),
+                  loss=BinaryCrossentropy(),
+                  metrics=['accuracy']
+                  )
 
-# Directory TensorBoard
-log_dir = (f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/'
-           f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}')
-# log_dir = (f'E:/USERS/dominik.roczan/PycharmProjects/logs/'
-#          f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}')
+    # Folder na wyniki
+    result_folder = 'results'
+    os.makedirs(result_folder, exist_ok=True)
 
-os.makedirs(log_dir, exist_ok=True)
+    # Nazwa pliku tekstowego
+    result_file_name = f"{model_name}+2Classes+++working.txt"
+    result_file_path = os.path.join(result_folder, result_file_name)
 
-# TensorBoard Callback
-tensorboard_train = TensorBoard(log_dir=log_dir, histogram_freq=0, write_graph=False, write_images=False)
+    return result_file_path
 
-# Directory Checkpoint
-checkpoint_filepath = 'results/checkpoint.model.keras'
+
+def callback():
+    # Directory TensorBoard
+    log_dir = (f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/'
+               f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}')
+    # log_dir = (f'E:/USERS/dominik.roczan/PycharmProjects/logs/'
+    #          f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}')
+
+    os.makedirs(log_dir, exist_ok=True)
+
+    # TensorBoard Callback
+    tensorboard_train = TensorBoard(log_dir=log_dir, histogram_freq=0, write_graph=False, write_images=False)
+
+    # Directory Checkpoint
+    # checkpoint_filepath = 'results/checkpoint.model.keras'
+
+    return tensorboard_train
 
 
 # Wywołanie tensorboard w konsoli: tensorboard --logdir=C:/USERS/domin/OneDrive/Pulpit/Python/logs
 # Wywołanie tensorboard w konsoli: tensorboard --logdir=E:/USERS/dominik.roczan/PycharmProjects/logs
 
-
 def model_checkpoint_callback():
     return ModelCheckpoint(
-        filepath=checkpoint_filepath,
+        filepath='results/checkpoint.model.keras',
         monitor='val_accuracy',
         mode='max',
         save_best_only=True,
@@ -195,7 +207,8 @@ def train_model(train_generator, val_generator, batch_size=16):
     end_time = datetime.now()
     training_duration = end_time - start_time
     save_model = datetime.now()
-    print(best_model)
+    # print(best_model)
+
     return training_duration, save_model, best_model
 
 
@@ -212,28 +225,96 @@ def model_evaluation(y_true, y_pred_binary):
     # Ocena modelu
     classification_rep = classification_report(y_true, y_pred_binary)
     conf_matrix = confusion_matrix(y_true, y_pred_binary)
-    accuracy = accuracy_score(y_true, y_pred_binary)
+    # accuracy = accuracy_score(y_true, y_pred_binary)
 
-    return classification_rep, conf_matrix, accuracy
+    return classification_rep, conf_matrix
 
+def results(best_model, train_generator, val_generator, test_generator, training_duration, save_model,
+           classification_rep, conf_matrix):
+    """Save results to a text file."""
+
+    train_results = best_model.evaluate(train_generator),
+    print(f'Dawaj: {train_results}')
+    loss_train_results = round(train_results[0], 4),
+    acc_train_results = round(train_results[1], 4),
+    print("Train Loss:", loss_train_results),
+    print("Train Accuracy:", acc_train_results)
+
+    # Wyniki na zbiorze walidacyjnym
+    val_results = best_model.evaluate(val_generator)
+    loss_val_results = round(val_results[0], 4)
+    acc_val_results = round(val_results[1], 4)
+    print("Validation Loss:", loss_val_results)
+    print("Validation Accuracy:", acc_val_results)
+
+    # Wyniki na zbiorze testowym
+    test_results = best_model.evaluate(test_generator)
+    loss_test_results = round(test_results[0], 4)
+    acc_test_results = round(test_results[1], 4)
+    print("Test Loss:", loss_test_results)
+    print("Test Accuracy:", acc_test_results)
+
+    # Zapis wyników do pliku .txt
+    with open(result_file_path, 'w') as result_file:
+        result_file.write("Model Name: {}\n".format(model_name))
+        result_file.write("\n")
+        result_file.write('Data: {}\n'.format(save_model))
+        result_file.write("Training Duration: {}\n".format(training_duration))
+        result_file.write("\n")
+        result_file.write("Train Accuracy: {}\n".format(acc_train_results))
+        result_file.write("Validation Accuracy: {}\n".format(acc_val_results))
+        result_file.write("Test Accuracy: {}\n".format(acc_test_results))
+        result_file.write("\n")
+        result_file.write("Train loss: {}\n".format(loss_train_results))
+        result_file.write("Validation loss: {}\n".format(loss_val_results))
+        result_file.write("Test loss: {}\n".format(loss_test_results))
+        result_file.write("\n\n")
+        result_file.write("Classification Report:\n")
+        result_file.write(classification_rep)
+        result_file.write("\n\n")
+        result_file.write("Confusion Matrix:\n")
+        result_file.write(np.array2string(conf_matrix, separator=', '))
+
+    # Otrzymaj słownik przypisujący etykiety klas do indeksów
+    class_indices = train_generator.class_indices
+
+    # Wydrukuj słownik
+    print("Class Indices:", class_indices)
+
+    # Otrzymaj odwrotny słownik, przypisujący indeksy do etykiet
+    indices_to_classes = {v: k for k, v in class_indices.items()}
+
+    # Wydrukuj odwrotny słownik
+    print("Indices to Classes:", indices_to_classes)
+
+    # Otrzymaj listę klas
+    class_names = list(class_indices.keys())
+
+    # Wydrukuj listę klas
+    print("Class Names:", class_names)
 
 if __name__ == "__main__":
     train_dir, val_dir, test_dir = path_datasets()
 
     train_datagen, val_datagen, test_datagen = data_generator()
     data_processing(train_dir, val_dir, test_dir, class_mode='binary', batch_size=16)
-    train_generator, val_generator, test_generator, class_mode, batch_size = data_processing(train_dir, val_dir,
+    train_generator, val_generator, test_generator, class_mode, batch_size = data_processing(train_dir,
+                                                                                             val_dir,
                                                                                              test_dir,
                                                                                              class_mode='binary',
                                                                                              batch_size=16)
+
+    model_name, base_model = get_base_model()
+    model = build_model(base_model)
+    result_file_path = compile_model(model)
+
+    tensorboard_train = callback()
     early_stop = early_stopping()
-    checkpoint = model_checkpoint_callback()
+    model_checkpoint_callback()
 
     training_duration, save_model, best_model = train_model(train_generator, val_generator, batch_size)
-
     y_true, y_pred, y_pred_binary = data_evaluation(test_generator, best_model)
 
-    classification_rep, conf_matrix, accuracy = model_evaluation(y_true, y_pred_binary)
-
-    prints(best_model, train_generator, val_generator, test_generator, training_duration, save_model,
-           classification_rep, conf_matrix, accuracy)
+    classification_rep, conf_matrix = model_evaluation(y_true, y_pred_binary)
+    results(best_model, train_generator, val_generator, test_generator, training_duration, save_model,
+            classification_rep, conf_matrix)
