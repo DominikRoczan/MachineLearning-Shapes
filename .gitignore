@@ -1,0 +1,9 @@
+# created by virtualenv automatically
+
+.venv/
+
+new_Image/
+
+work/
+
+*.md
