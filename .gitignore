@@ -2,6 +2,10 @@
 
 .venv/
 
+.idea/
+
+__pycache__/
+
 new_Image/
 
 work/
