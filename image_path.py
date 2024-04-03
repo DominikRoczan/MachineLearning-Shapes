@@ -1,9 +1,19 @@
 image_path = 'new_Image/107.jpg'
 
+import cv2 as cv2
+import numpy as np
 
-def print_allpixels():
-    import cv2
-    import numpy as np
+
+def print_allpixels(image_path):
+    """
+    Reads an image from the specified path, prints its pixel values and shape, and saves all pixel values to a text file.
+
+    Args:
+        image_path (str): Path to the image file.
+
+    Returns:
+        None
+    """
 
     image = cv2.imread(image_path)
     print(image)
@@ -13,5 +23,6 @@ def print_allpixels():
         for row in image:
             np.savetxt(file, row)
 
+
 if __name__ == '__main__':
-    print_allpixels()
+    print_allpixels(image_path)
