@@ -13,7 +13,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 # Path to images
-from Shapes_25_ImagePath import image_path
+from image_path import image_path
 
 img_path = image_path
 imag = img_path
