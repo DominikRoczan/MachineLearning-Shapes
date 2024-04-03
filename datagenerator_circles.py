@@ -81,4 +81,8 @@ destination_path_circles = os.path.join(source_path, 'Circles')
 
 if __name__ == "__main__":
     generate_multiple_images(width, height, num_jpg_circle, destination_path_circles)
+<<<<<<< HEAD
     storage(num_jpg_circle, destination_path_circles, destination_path_circles)
+=======
+    storage(num_jpg_circle, destination_path_circles, destination_path_circles)
+>>>>>>> acf6128c69a0297734e9fe79087dc8bcf096cec3
