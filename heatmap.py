@@ -1,3 +1,18 @@
+"""
+Title: Grad-CAM class activation visualization
+Author: [fchollet](https://twitter.com/fchollet)
+Date created: 2020/04/26
+Last modified: 2021/03/07
+Description: How to obtain a class activation heatmap for an image classification model.
+Accelerator: GPU
+"""
+
+"""
+Adapted from Deep Learning with Python (2017).
+
+## Setup
+"""
+
 import os
 
 os.environ["KERAS_BACKEND"] = "tensorflow"
@@ -6,7 +21,7 @@ import numpy as np
 import tensorflow as tf
 import keras
 from tensorflow.keras.models import load_model
-from keras.applications.mobilenet_v2 import preprocess_input, decode_predictions
+from keras.applications.mobilenet_v2 import preprocess_input
 
 from IPython.display import Image, display
 import matplotlib as mpl
@@ -78,12 +93,9 @@ def save_and_display_gradcam(img_path, heatmap, cam_path='Heatmap.jpg', alpha=0.
 
 img_array = preprocess_input(get_img_array(imag, size=img_size))
 
-# Generuj heatmapę
 heatmap = make_gradcam_heatmap(img_array, model, last_conv_layer_name)
 
-# Zapisz i wyświetl Grad-CAM
 save_and_display_gradcam(imag, heatmap)
 
-# Wyświetl heatmapę
 plt.matshow(heatmap)
 plt.show()

@@ -74,8 +74,6 @@ destination_path_triangles = os.path.join(source_path, 'Triangles')
 
 if __name__ == "__main__":
     generate_multiple_images(width, height, num_jpg_tr, destination_path_triangles)
-<<<<<<< HEAD
     storage(num_jpg_tr, destination_path_triangles, destination_path_triangles)
-=======
     storage(num_jpg_tr, destination_path_triangles, destination_path_triangles)
->>>>>>> acf6128c69a0297734e9fe79087dc8bcf096cec3
+
