@@ -1,0 +1,19 @@
+import openai
+
+# Ustaw klucz API od OpenAI
+openai.api_key = 'YOUR_API_KEY'
+
+# Opis tekstowy
+text_description = "a red balloon in the shape of a heart"
+
+# Użyj modelu DALL-E do generowania obrazu na podstawie tekstu
+response = openai.Image.create(
+  engine="dalle",
+  prompt=text_description,
+  max_tokens=50
+)
+
+# Pobierz wygenerowany obraz
+image_url = response['output']['url']
+
+print("Generated Image URL:", image_url)
