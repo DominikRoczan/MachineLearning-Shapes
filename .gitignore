@@ -1,0 +1,13 @@
+# created by virtualenv automatically
+
+.venv/
+
+.idea/
+
+__pycache__/
+
+new_Image/
+
+work/
+
+*.md
