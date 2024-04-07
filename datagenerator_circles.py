@@ -73,12 +73,12 @@ def storage(num_jpg_circle, source_path, destination_path_circles):
             pass
 
 
-width = 224
-height = 224
-num_jpg_circle = 6
-source_path = 'Generator'
-destination_path_circles = os.path.join(source_path, 'Circles')
-
 if __name__ == "__main__":
+    width = 224
+    height = 224
+    num_jpg_circle = 6
+    source_path = 'Generator'
+    destination_path_circles = os.path.join(source_path, 'Circles')
+
     generate_multiple_images(width, height, num_jpg_circle, destination_path_circles)
     storage(num_jpg_circle, destination_path_circles, destination_path_circles)

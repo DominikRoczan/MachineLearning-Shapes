@@ -66,14 +66,12 @@ def storage(ilosc_jpg_tr, source_path, destination_path_triangles):
             pass
 
 
-width = 224
-height = 224
-num_jpg_tr = 40
-source_path = 'Generator'
-destination_path_triangles = os.path.join(source_path, 'Triangles')
-
 if __name__ == "__main__":
+    width = 224
+    height = 224
+    num_jpg_tr = 40
+    source_path = 'Generator'
+    destination_path_triangles = os.path.join(source_path, 'Triangles')
+
     generate_multiple_images(width, height, num_jpg_tr, destination_path_triangles)
     storage(num_jpg_tr, destination_path_triangles, destination_path_triangles)
-    storage(num_jpg_tr, destination_path_triangles, destination_path_triangles)
-

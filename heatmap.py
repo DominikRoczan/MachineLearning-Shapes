@@ -34,15 +34,14 @@ img_path = image_path
 imag = img_path
 
 # Load model
-model_path = 'mobilenet+2_Classe.h5'
+model_path = 'best.mobilenet+2_Classes.h5'
 model = load_model(model_path)
 
 img_size = (224, 224)
-# last_conv_layer_name = "conv2d_1"  # Zmień na nazwę warstwy konwolucyjnej w twoim modelu
-last_conv_layer_name = "conv2d"  # Zmień na nazwę warstwy konwolucyjnej w twoim modelu
+last_conv_layer_name = "conv2d"
 
 
-def get_img_array(img_path, size):
+def get_img_array(img_path, size=img_size):
     img = keras.utils.load_img(img_path, target_size=size)
     array = keras.utils.img_to_array(img)
     array = np.expand_dims(array, axis=0)
@@ -90,12 +89,11 @@ def save_and_display_gradcam(img_path, heatmap, cam_path='Heatmap.jpg', alpha=0.
 
     display(Image(cam_path))
 
+if __name__ == '__main__':
+    img_array = preprocess_input(get_img_array(imag, size=img_size))
+    heatmap = make_gradcam_heatmap(img_array, model, last_conv_layer_name)
+    save_and_display_gradcam(imag, heatmap)
 
-img_array = preprocess_input(get_img_array(imag, size=img_size))
+    plt.matshow(heatmap)
+    plt.show()
 
-heatmap = make_gradcam_heatmap(img_array, model, last_conv_layer_name)
-
-save_and_display_gradcam(imag, heatmap)
-
-plt.matshow(heatmap)
-plt.show()
