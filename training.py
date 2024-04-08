@@ -175,6 +175,7 @@ def compile_model(model):
     model: Model to compile.
 
     Returns:
+    model: Compiled model.
     result_file_path (str): Path to the result file.
     """
 
@@ -191,7 +192,7 @@ def compile_model(model):
     result_file_name = f"{model_name}+2_Classes.txt"
     result_file_path = os.path.join(result_folder, result_file_name)
 
-    return result_file_path
+    return model, result_file_path
 
 
 def callback_tensorboard():
@@ -202,10 +203,10 @@ def callback_tensorboard():
     tensorboard_train: TensorBoard callback.
     """
 
-    #log_dir = (f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/'
-    #            f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}')
-    log_dir = (f'E:/USERS/dominik.roczan/PycharmProjects/logs/'
-               f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}')
+    log_dir = (f'C:/USERS/domin/OneDrive/Pulpit/Python/logs/'
+                f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}')
+    #log_dir = (f'E:/USERS/dominik.roczan/PycharmProjects/logs/'
+     #          f'{model_name}....{datetime.now().strftime("%Y.%m.%d....%H.%M")}')
 
     os.makedirs(log_dir, exist_ok=True)
 
@@ -344,7 +345,7 @@ def model_evaluation(y_true, y_pred_binary):
 
     return classification_rep, conf_matrix
 
-def results(best_model, train_generator, val_generator, test_generator, training_duration, save_model,
+'''def results(best_model, train_generator, val_generator, test_generator, training_duration, save_model,
             classification_rep, conf_matrix):
     """
     Save evaluation results to a text file.
@@ -417,7 +418,7 @@ def results(best_model, train_generator, val_generator, test_generator, training
 
     # A list of class names
     class_names = list(class_indices.keys())
-    print("Class Names:", class_names)
+    print("Class Names:", class_names)'''
 
 
 
@@ -432,8 +433,9 @@ if __name__ == "__main__":
 
     # Configures data generators
     # Processes data and creates data generators
-    train_datagen, val_datagen, test_datagen = data_generator()
-    data_processing(train_dir, val_dir, test_dir, class_mode='binary', batch_size=16)
+
+
+    # train_datagen, val_datagen, test_datagen = data_generator()
     train_generator, val_generator, test_generator, class_mode, batch_size = data_processing(train_dir,
                                                                                              val_dir,
                                                                                              test_dir,
@@ -445,7 +447,7 @@ if __name__ == "__main__":
     # Compiles the model with specified optimizer, loss function, and metrics
     model_name, base_model = get_base_model()
     model = build_model(base_model)
-    result_file_path = compile_model(model)
+    model, result_file_path = compile_model(model)
 
     # Sets up callbacks for TensorBoard, ModelCheckpoint, and EarlyStopping
     tensorboard_train = callback_tensorboard()
@@ -453,7 +455,7 @@ if __name__ == "__main__":
     model_checkpoint_callback()
 
     # Trains the model and evaluates its performance
-    training_duration, save_model, best_model = train_model(train_generator, val_generator, epochs=15, batch_size=batch_size)
+    training_duration, save_model, best_model = train_model(train_generator, val_generator, epochs=5, batch_size=batch_size)
     y_true, y_pred, y_pred_binary = data_evaluation(test_generator, best_model)
 
     # Prints classification report and confusion matrix
